@@ -1,0 +1,61 @@
+name: Build App Locally and Push APK
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        type: choice
+        description: Build profile to use
+        options:
+          - development
+          - preview
+          - production
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false  # Avoid conflicts with authentication
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+          cache: yarn
+
+      - name: 🏗 Setup Expo and EAS
+        uses: expo/expo-github-action@v7
+        with:
+          token: ${{ secrets.EXPO_TOKEN }}
+          expo-version: latest
+          eas-version: latest
+
+      - name: 📦 Install dependencies
+        run: yarn
+
+      - name: 👷 Build APK Locally
+        run: |
+          eas build --local \
+            --non-interactive \
+            --output=./app-release.apk \
+            --platform=android \
+            --profile=${{ github.event.inputs.profile }}
+
+      - name: 🚀 Commit and Push APK to Repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Clone the repo to a separate branch (apk-builds)
+          git checkout -b apk-builds
+          
+          # Move the APK to the builds folder
+          mkdir -p builds
+          mv app-release.apk builds/app-release-${{ github.event.inputs.profile }}.apk
+          
+          # Commit and push the APK
+          git add builds/app-release-${{ github.event.inputs.profile }}.apk
+          git commit -m "🚀 Add new APK build for ${{ github.event.inputs.profile }}"
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/YOUR_USERNAME/YOUR_REPO.git apk-builds --force
