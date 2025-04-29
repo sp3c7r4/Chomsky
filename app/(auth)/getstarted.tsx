@@ -5,6 +5,7 @@ import { colors, fontsizes } from '@/constants'
 import { StatusBar } from 'expo-status-bar'
 import CurvyLine1 from '@/svg/curvy1'
 import Button from '@/components/Button'
+import AnimatedLeaf from '@/components/Leaf'
 
 function Line() {
   return (
@@ -17,12 +18,17 @@ function Line() {
 }
 
 const getstarted = () => {
+  const leaves = Array.from({ length: 5 }); // create 5 leaves
+
   return (
     <SafeAreaView style={{ paddingHorizontal: 16, backgroundColor: colors.light.black, flex: 1}}>
       <View style={{ position: "absolute",zIndex: -1, top: "10%", width: 1 }}>
         <CurvyLine1 style={{transform: [{ rotate: "15deg" }] }}/>
       </View>
       <SafeAreaView style={{alignItems: "center", justifyContent: "center", flex: 1}}>
+      {leaves.map((_, i) => (
+        <AnimatedLeaf key={i} delay={i * 500} />
+      ))}
         <Text style={{fontSize: fontsizes.heading2,color: "#fff", fontFamily: "Satoshi-Bold"}}>Let's Get Started!</Text>
         <Text style={{fontSize: fontsizes.paragraph1,color: colors.light.overlay_white,textAlign: "center", opacity: 0.5, fontFamily: "Satoshi-Regular"}}>Create a chomsky account or Login if you
         already{"\n"} have an account</Text>
