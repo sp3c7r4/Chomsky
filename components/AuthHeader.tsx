@@ -1,0 +1,21 @@
+import { View, Text, Image, Pressable } from 'react-native'
+import React from 'react'
+import { fontsizes } from '@/constants'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { router } from 'expo-router'
+
+const AuthHeader = () => {
+  return (
+    <SafeAreaView style={{ gap: 10, flexDirection: "row"}}>
+      <Pressable onPress={() => router.back()}>
+        <Image source={require('@/assets/icon/back.png')} style={{width: 35, height: 35}}/>
+      </Pressable>
+      <View>
+        <Text style={{fontSize: 17.5, color: "#fff", fontFamily: "Satoshi-Bold" }}>Let’s create new account</Text>
+        <Text style={{fontSize: 10.1, color: "#fff", opacity: 0.5, fontFamily: "Satoshi-Medium" }}>Create an account by filling in the data below</Text>
+      </View>
+    </SafeAreaView>
+  )
+}
+
+export default AuthHeader
