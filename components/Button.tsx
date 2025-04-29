@@ -43,6 +43,7 @@ const Button: React.FC<ButtonProps> = ({
           borderRadius,
         },
         style, // Allow custom styles to override defaults
+        // {marginVertical: 10}
       ]}
     >
       {icon && <View style={styles.iconContainer}>{icon}</View>}
