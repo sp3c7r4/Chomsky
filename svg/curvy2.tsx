@@ -12,7 +12,7 @@ const CurvyLine2 = (props: any) => (
     <Path
       d="M-11.1406 11.7869C61.2987 -5.83769 240.427 -12.754 377.425 100.578"
       stroke="#32B582"
-      strokeWidth={2}
+      strokeWidth={1.5}
     />
   </Svg>
 );

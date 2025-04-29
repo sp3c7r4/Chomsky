@@ -17,13 +17,13 @@ export default function Index() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setRedirect(true);
-    }, 2000);
+    }, 200);
 
     return () => clearTimeout(timeout);
   }, []);
 
   if (redirect) {
-    return <Redirect href="/(tabs)/chomsky" />;
+    return <Redirect href="/(auth)/getstarted" />;
   }
 
   return (
