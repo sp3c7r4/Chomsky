@@ -4,6 +4,7 @@ const colors = {
     black: "#000",
     overlay_white: "#F9F9F9",
     background_white: "#F0F1F3",
+    background_black: "#121212",
     grey: "rgba(1,1,1,0.5)"
   }
 }

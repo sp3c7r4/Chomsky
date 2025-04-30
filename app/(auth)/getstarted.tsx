@@ -22,7 +22,7 @@ const getstarted = () => {
   const leaves = Array.from({ length: 5 }); // create 5 leaves
 
   return (
-    <SafeAreaView style={{ paddingHorizontal: 16, backgroundColor: colors.light.black, flex: 1}}>
+    <SafeAreaView style={{ paddingHorizontal: 16, backgroundColor: colors.light.background_black, flex: 1}}>
       <View style={{ position: "absolute",zIndex: -1, top: "10%"}}>
         <CurvyLine1 style={{transform: [{ rotate: "15deg" }] }}/>
       </View>
