@@ -17,7 +17,7 @@ export default function Index() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setRedirect(true);
-    }, 2000);
+    }, 20);
 
     return () => clearTimeout(timeout);
   }, []);

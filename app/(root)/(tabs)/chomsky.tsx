@@ -2,38 +2,29 @@ import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Audio } from 'expo-av'
-import { Button, Image, StyleSheet } from 'react-native';
+import { Button, Image, Platform, Pressable, StyleSheet, Text } from 'react-native';
 import {io} from 'socket.io-client'
 import * as FileSystem from 'expo-file-system';
 import Voice from '@react-native-voice/voice';
 import { View } from 'react-native';
 import { Alert } from 'react-native';
-import { useAudioRecorder,useAudioPlayer , RecordingOptions, AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
-import { colors } from '@/constants';
-import Blob from '@/components/Blob';
-import FloatingImage from '@/components/FloatingCloud';
-import LottieView, { LottieViewProps } from 'lottie-react-native';
+import { useAudioRecorder,useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
+import { colors, fontsizes } from '@/constants';
+import LottieView from 'lottie-react-native';
+
 
 const chomsky = () => {
+  const [sound, setSound] = useState();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const greeting = require('@/assets/audio/greeting.mp3')
+  const greetingAudio = require('@/assets/audio/greeting.mp3')
   const [greeted, setGreeted] = useState(false)
   const [isRecording, setIsRecording] = useState(false);
   const animationRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  // const [uri, setUri] = useState("")
-  const player = useAudioPlayer(greeting)
-  const {duration} = useAudioPlayerStatus(player)
+  const [uri, setUri] = useState<string | undefined | null>()
+  const greeting = useAudioPlayer(greetingAudio)
 
-  // const playAudio = async (uri) => {
-  //   if (uri) {
-  //     const player = await useAudioPlayer(uri);
-  //     await sound.playAsync();
-  //   } else {
-  //     Alert.alert('No audio file to play');
-  //   }
-  // };
-        
+
   function toggleAnimation() {
     if (isPlaying) {
       // If animation is playing, stop it
@@ -45,9 +36,9 @@ const chomsky = () => {
       setIsPlaying(true);
     }
   };
-
+  
   function firstGreeting() {
-    player.play()
+    greeting.play()
     toggleAnimation()
     // console.log(duration)
     setTimeout(() => {
@@ -55,52 +46,89 @@ const chomsky = () => {
     }, 5500)
   }
   // toggleAnimation()
-
-  const record = async () => {
+  
+  const startRecording = async () => {
+    console.log("Recording started!!!")
     await audioRecorder.prepareToRecordAsync();
     audioRecorder.record();
     setIsRecording(true);
   };
-
-  const stopRecording = async () => {
-    await audioRecorder.stop();
-    setIsRecording(false);
-    setUri(audioRecorder?.uri)
+  
+  // let player;
+  // if(uri) {
+    //   player = useAudioPlayer({ uri });
+    // }
+    const stopRecording = async () => {
+      console.log("Recording stopped")
+      await audioRecorder.stop();
+      setIsRecording(false);
+      setUri(audioRecorder?.uri)
+      if (audioRecorder.uri) {
+        const fileUri = audioRecorder.uri;
+        const fileInfo = await FileSystem.getInfoAsync(fileUri);
+        if (fileInfo.exists) {
+          console.log(audioRecorder?.uri)
+        } else {
+          console.error("File does not exist at the specified URI");
+        }
+      }
+      
+    const player = useAudioPlayer({ uri: audioRecorder.uri });
+    // playSound(audioRecorder.uri)
+    await player.play()
   };
 
-  useEffect(() => {
-    (async () => {
-      const status = await AudioModule.requestRecordingPermissionsAsync();
-      if (!status.granted) {
-        Alert.alert('Permission to access microphone was denied');
+{/** Side Effects */}
+    useEffect(() => {
+      (async () => {
+          const status = await AudioModule.requestRecordingPermissionsAsync();
+          if (!status.granted) {
+            Alert.alert('Permission to access microphone was denied');
+          }
+        })();
+      }, []);
+      
+      useEffect(() => {
+        console.log(uri)
+      },[uri])
+      
+    useEffect(() => {
+      if (!greeted) {
+        firstGreeting()
+        setGreeted(true)
       }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (!greeted) {
-      firstGreeting()
-      setGreeted(true)
-    }
-  }, [])
-
+    }, [])
+{/** End of Side Effects */}
+  
   return (
     <SafeAreaView style={[styles.container, {position: "relative"}]}>
-      <View>
-        <Image source={require('@/assets/images/chomsky_mute.png')} resizeMode='contain' style={{width: "auto", height: 250, zIndex: 1}}/>
-        <LottieView
-            ref={animationRef}
-            style={{ width: '30%', height: '30%',position: "absolute", zIndex: 20, bottom: 40, alignSelf: "center" }}
-            loop={true}
-            speed={2.2}
-            source={require('@/assets/lottie/talking.json')}
-        />
+      <View style={{height: "20%"}}>
+        <Text style={{color: "#fff", textAlign: "center"}}>
+          <Text style={{fontFamily: "Satoshi-Bold", fontSize: fontsizes.heading2}}>Hello, Satar!{"\n"}</Text>
+          <Text style={{fontFamily: "Satoshi-Bold",color: "rgba(255,255,255,0.2)", fontSize: fontsizes.button}}>Go ahead, I’m listening</Text>
+        </Text>
       </View>
-        {/* <FloatingImage source={require('@/assets/images/cloud.png')} style={{ left: "10%",width: 100, height: 50 }} /> */}
-        <View style={{width: "100%", flex:1, zIndex: 10, position: "absolute", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
-          <Image source={require('@/assets/images/cloud.png')} resizeMode='contain' style={{width: 70, height: 50, marginLeft: 20}}/>
-          <Image source={require('@/assets/images/cloud.png')} resizeMode='contain' style={{transform: [{scaleX: -1}], marginTop: 100, width: 70, height: 50, marginRight: 20}}/>
+      {/* Chomsky Mascot 🤩 */}
+      <Pressable
+        onPressIn={startRecording}
+        onPressOut={stopRecording}
+      >
+        <View>
+          <Image source={require('@/assets/images/chomsky_mute.png')} resizeMode='contain' style={{width: "auto", height: 250, zIndex: 1}}/>
+          <LottieView
+              ref={animationRef}
+              style={{ width: '30%', height: '30%',position: "absolute", zIndex: 20, bottom: 40, alignSelf: "center" }}
+              loop={true}
+              speed={2.2}
+              source={require('@/assets/lottie/talking.json')}
+          />
+          <View style={{width: "100%", flex:1, zIndex: 10,bottom: 70, position: "absolute", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+            <Image source={require('@/assets/images/cloud.png')} resizeMode='contain' style={{width: 70, height: 50, marginLeft: 20}}/>
+            <Image source={require('@/assets/images/cloud.png')} resizeMode='contain' style={{transform: [{scaleX: -1}], marginTop: 100, width: 70, height: 50, marginRight: 20}}/>
+          </View>
         </View>
+      </Pressable>
+        {/* <FloatingImage source={require('@/assets/images/cloud.png')} style={{ left: "10%",width: 100, height: 50 }} /> */}
       <View style={{position: "absolute"}}>
       </View>
       {/* <Button title='talk' onPress={toggleAnimation}/> */}
@@ -117,6 +145,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
+
+
 // const chomsky = () => {
 //   const [recording, setRecording] = useState<Audio.Recording|undefined>();
 //   const [permissionResponse, requestPermission] = Audio.usePermissions();
