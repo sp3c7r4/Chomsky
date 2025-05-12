@@ -23,6 +23,7 @@ const chomsky = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uri, setUri] = useState<string | undefined | null>()
   const greeting = useAudioPlayer(greetingAudio)
+  const socket = io("http://172.20.10.3:3000");
 
 
   function toggleAnimation() {
@@ -58,24 +59,25 @@ const chomsky = () => {
   // if(uri) {
     //   player = useAudioPlayer({ uri });
     // }
-    const stopRecording = async () => {
-      console.log("Recording stopped")
-      await audioRecorder.stop();
-      setIsRecording(false);
-      setUri(audioRecorder?.uri)
-      if (audioRecorder.uri) {
-        const fileUri = audioRecorder.uri;
-        const fileInfo = await FileSystem.getInfoAsync(fileUri);
-        if (fileInfo.exists) {
-          console.log(audioRecorder?.uri)
-        } else {
-          console.error("File does not exist at the specified URI");
-        }
+  const stopRecording = async () => {
+    console.log("Recording stopped")
+    await audioRecorder.stop();
+    setIsRecording(false);
+    setUri(audioRecorder?.uri)
+    if (audioRecorder.uri) {
+      const fileUri = audioRecorder.uri;
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        console.log(audioRecorder?.uri)
+      } else {
+        console.error("File does not exist at the specified URI");
       }
+    }
+    
       
-    const player = useAudioPlayer({ uri: audioRecorder.uri });
-    // playSound(audioRecorder.uri)
-    await player.play()
+    // const player = useAudioPlayer({ uri: audioRecorder.uri });
+    // // playSound(audioRecorder.uri)
+    // await player.play()
   };
 
 {/** Side Effects */}
@@ -98,6 +100,20 @@ const chomsky = () => {
         setGreeted(true)
       }
     }, [])
+
+    useEffect(() => {
+      socket.on("connect", () => {
+        console.log("Connected to socket server");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from socket server");
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }, []);
 {/** End of Side Effects */}
   
   return (
