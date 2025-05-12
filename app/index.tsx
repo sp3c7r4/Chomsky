@@ -17,13 +17,13 @@ export default function Index() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setRedirect(true);
-    }, 200);
+    }, 2000);
 
     return () => clearTimeout(timeout);
   }, []);
 
   if (redirect) {
-    return <Redirect href="/(auth)/getstarted" />;
+    return <Redirect href="/(onboarding)" />;
   }
 
   return (

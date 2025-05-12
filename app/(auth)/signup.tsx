@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView, Platform, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors } from '@/constants'
@@ -7,6 +7,7 @@ import InputBox from '@/components/InputBox'
 import Button from '@/components/Button'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {Controller, useForm} from 'react-hook-form'
+import { router } from 'expo-router'
 // import {
 //   GoogleSignin,
 //   GoogleSigninButton,
@@ -53,7 +54,13 @@ const signup = () => {
   return (
     <SafeAreaView style={{backgroundColor: colors.light.background_black, flex: 1, paddingHorizontal: 16}}>
       <AuthHeader/>
-      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{ flex: 1}}>
+
+      <KeyboardAwareScrollView 
+        showsVerticalScrollIndicator={false} 
+        style={{ flex: 1 }} 
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? '100%' : '0%' }}
+        keyboardShouldPersistTaps="handled"
+        >
             { registerData.map((item: any) => (
           <Controller
             key={item.key}
@@ -89,11 +96,11 @@ const signup = () => {
             onChangeText={onChange}
             error={errors[item.key]?.message}
             containerStyle={{marginBottom: 10}}
-                />
+            />
         )}
           />
             ))}
-          <View style={{ marginVertical: 10, marginBottom: 100 }}>
+          <View style={{ marginVertical: 8 }}>
             <Button
               onPress={handleSubmit(onSubmit)}
               type="normal"
@@ -102,7 +109,13 @@ const signup = () => {
               title={loading ? "Loading..." : "Sign Up"}
             />
           </View>
-        </KeyboardAwareScrollView>
+          <View style={{flexDirection: "row", alignItems: "baseline", justifyContent: "center"}}>
+              <Text style={{textAlign: "center", color: "#fff", marginVertical: 1}}>Already have an account. </Text>
+              <Pressable onPress={() => router.navigate("/(auth)/signin")}>
+                <Text style={{textAlign: "center", color: colors.light.primary}}>Login</Text>
+              </Pressable>
+            </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   )
 }
