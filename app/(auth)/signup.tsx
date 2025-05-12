@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {Controller, useForm} from 'react-hook-form'
 import { router } from 'expo-router'
+import Header from '@/components/Header'
 // import {
 //   GoogleSignin,
 //   GoogleSigninButton,
@@ -53,8 +54,7 @@ const signup = () => {
   });
   return (
     <SafeAreaView style={{backgroundColor: colors.light.background_black, flex: 1, paddingHorizontal: 16}}>
-      <AuthHeader/>
-
+      <Header onPress={() => router.replace("/(onboarding)")} title='Let’s create new account' message='Create an account by filling in the data below'/>
       <KeyboardAwareScrollView 
         showsVerticalScrollIndicator={false} 
         style={{ flex: 1 }} 

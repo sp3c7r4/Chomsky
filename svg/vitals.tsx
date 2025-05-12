@@ -1,11 +1,12 @@
 import * as React from "react";
 import Svg, { Rect, Path } from "react-native-svg";
-const VitalSvg = ({ color }: { color: string}) => (
+const VitalSvg = ({ color,props }: { color: string}) => (
   <Svg
     width={22}
     height={25}
     viewBox="0 0 22 25"
     fill='none'
+    {...props}
   >
     <Rect width={22} height={25} rx={3} fill={color} />
     <Path
