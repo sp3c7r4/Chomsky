@@ -72,9 +72,7 @@ const _layout = () => {
         name="vitals" 
         options={{ 
           tabBarIcon: ({ focused }) => (
-            <View style={{marginTop: 10}}>
               <Vitalssvg color={focused ? "#32B582" : "#000"} />
-            </View>
           ) 
         }} 
       />
@@ -82,9 +80,7 @@ const _layout = () => {
         name="location" 
         options={{ 
           tabBarIcon: ({ focused }) => (
-            <View style={{marginTop: 10}}>
               <LocationSvg color={focused ? "#32B582" : "#000"} />
-            </View>
           ) 
         }} 
       />

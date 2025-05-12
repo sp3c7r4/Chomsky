@@ -5,29 +5,56 @@ import { Audio } from 'expo-av'
 import { Button, Image, StyleSheet } from 'react-native';
 import {io} from 'socket.io-client'
 import * as FileSystem from 'expo-file-system';
+import Voice from '@react-native-voice/voice';
 import { View } from 'react-native';
 import { Alert } from 'react-native';
-import { useAudioRecorder,useAudioPlayer , RecordingOptions, AudioModule, RecordingPresets } from 'expo-audio';
+import { useAudioRecorder,useAudioPlayer , RecordingOptions, AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
 import { colors } from '@/constants';
 import Blob from '@/components/Blob';
 import FloatingImage from '@/components/FloatingCloud';
-import LottieView from 'lottie-react-native';
+import LottieView, { LottieViewProps } from 'lottie-react-native';
 
 const chomsky = () => {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const greeting = require('@/assets/audio/greeting.mp3')
+  const [greeted, setGreeted] = useState(false)
   const [isRecording, setIsRecording] = useState(false);
   const animationRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [uri, setUri] = useState("")
+  // const [uri, setUri] = useState("")
+  const player = useAudioPlayer(greeting)
+  const {duration} = useAudioPlayerStatus(player)
 
-  const playAudio = async () => {
-    if (uri) {
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.playAsync();
+  // const playAudio = async (uri) => {
+  //   if (uri) {
+  //     const player = await useAudioPlayer(uri);
+  //     await sound.playAsync();
+  //   } else {
+  //     Alert.alert('No audio file to play');
+  //   }
+  // };
+        
+  function toggleAnimation() {
+    if (isPlaying) {
+      // If animation is playing, stop it
+      animationRef.current?.pause();
+      setIsPlaying(false);
     } else {
-      Alert.alert('No audio file to play');
+      // If animation is stopped, play it
+      animationRef.current?.play();
+      setIsPlaying(true);
     }
   };
+
+  function firstGreeting() {
+    player.play()
+    toggleAnimation()
+    // console.log(duration)
+    setTimeout(() => {
+      animationRef.current?.pause()
+    }, 5500)
+  }
+  // toggleAnimation()
 
   const record = async () => {
     await audioRecorder.prepareToRecordAsync();
@@ -36,7 +63,6 @@ const chomsky = () => {
   };
 
   const stopRecording = async () => {
-    // The recording will be available on `audioRecorder.uri`.
     await audioRecorder.stop();
     setIsRecording(false);
     setUri(audioRecorder?.uri)
@@ -51,27 +77,15 @@ const chomsky = () => {
     })();
   }, []);
 
-  function toggleAnimation() {
-    if (isPlaying) {
-      // If animation is playing, stop it
-      animationRef.current?.pause();
-      setIsPlaying(false);
-    } else {
-      // If animation is stopped, play it
-      animationRef.current?.play();
-      setIsPlaying(true);
+  useEffect(() => {
+    if (!greeted) {
+      firstGreeting()
+      setGreeted(true)
     }
-  };
+  }, [])
 
   return (
     <SafeAreaView style={[styles.container, {position: "relative"}]}>
-
-      {/* <Button
-        title={isRecording ? 'Stop Recording' : 'Start Recording'}
-        onPress={isRecording ? stopRecording : record}
-      />
-      <Button title="Play Sound" onPress={playAudio} /> */}
-      {/* <Blob/> */}
       <View>
         <Image source={require('@/assets/images/chomsky_mute.png')} resizeMode='contain' style={{width: "auto", height: 250, zIndex: 1}}/>
         <LottieView
@@ -89,7 +103,7 @@ const chomsky = () => {
         </View>
       <View style={{position: "absolute"}}>
       </View>
-      <Button title='talk' onPress={toggleAnimation}/>
+      {/* <Button title='talk' onPress={toggleAnimation}/> */}
       <StatusBar style='auto'/>
     </SafeAreaView>
   );
