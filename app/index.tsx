@@ -3,7 +3,7 @@ import { Text, Image } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import logo from '@/assets/images/logo.png'
-import founders from '@/assets/images/founders.png'
+import founders from '@/assets/images/poweredby.png'
 import { useEffect } from "react";
 // import { io } from "socket.io-client";
 
@@ -17,7 +17,7 @@ export default function Index() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setRedirect(true);
-    }, 200);
+    }, 2000);
 
     return () => clearTimeout(timeout);
   }, []);
