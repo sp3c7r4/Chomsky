@@ -58,7 +58,7 @@ const FallingLeaf = ({ source, startLeft }:{ source: any, startLeft: any }) => {
           transform: [
             { translateY: animY },
             { translateX: animX },
-            { rotate: spin },
+            { rotate: spin }, 
           ],
         },
       ]}

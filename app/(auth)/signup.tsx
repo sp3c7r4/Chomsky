@@ -7,7 +7,18 @@ import InputBox from '@/components/InputBox'
 import Button from '@/components/Button'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {Controller, useForm} from 'react-hook-form'
-import GoogleSignIn from '@/auth/Google'
+// import {
+//   GoogleSignin,
+//   GoogleSigninButton,
+// } from '@react-native-google-signin/google-signin';
+
+// GoogleSignin.configure({
+//   webClientId: process.env.EXPO_PUBLIC_WEB_ID,
+//   scopes: ['profile', 'email'], // what API you want to access on behalf of the user, default is email and profile
+//   offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+//   forceCodeForRefreshToken: false,
+//   iosClientId: process.env.EXPO_PUBLIC_IOS_ID,
+// });
 
 const registerData = [
   { key: "firstname", label: "Firstname", placeholder: "E.g John" },
@@ -42,7 +53,6 @@ const signup = () => {
   return (
     <SafeAreaView style={{backgroundColor: colors.light.background_black, flex: 1, paddingHorizontal: 16}}>
       <AuthHeader/>
-      <Text>signup</Text>
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{ flex: 1}}>
             { registerData.map((item: any) => (
           <Controller
@@ -93,7 +103,6 @@ const signup = () => {
             />
           </View>
         </KeyboardAwareScrollView>
-        <GoogleSignIn/>
     </SafeAreaView>
   )
 }

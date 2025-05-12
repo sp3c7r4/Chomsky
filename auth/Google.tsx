@@ -26,7 +26,7 @@ export default function GoogleSignIn() {
     revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
   };
   
-  const CLIENT_ID = '1071231538092-08t5krr606e2k8pqjsssfgl09dru3tm5.apps.googleusercontent.com';
+  const CLIENT_ID = "EXPO_PUBLIC_ANDROID_ID";
 
   // Generate a random state string for security
   const generateRandomState = () => {
@@ -40,11 +40,12 @@ export default function GoogleSignIn() {
 
       // Generate state for CSRF protection
       const state = await generateRandomState();
-
+      const redirectUri = AuthSession.makeRedirectUri({ useProxy: true })
+      console.log('Actual redirect URI:', redirectUri);
       // Configure the authentication request
       const request = new AuthSession.AuthRequest({
         clientId: CLIENT_ID,
-        redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
+        redirectUri,
         responseType: 'code',
         scopes: ['profile', 'email'],
         state,
