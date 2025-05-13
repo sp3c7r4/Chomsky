@@ -5,7 +5,6 @@ import { Audio } from 'expo-av'
 import { Button, Image, Platform, Pressable, StyleSheet, Text } from 'react-native';
 import {io} from 'socket.io-client'
 import * as FileSystem from 'expo-file-system';
-import Voice from '@react-native-voice/voice';
 import { View } from 'react-native';
 import { Alert } from 'react-native';
 import { useAudioRecorder,useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
@@ -23,7 +22,7 @@ const chomsky = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uri, setUri] = useState<string | undefined | null>()
   const greeting = useAudioPlayer(greetingAudio)
-  const socket = io("http://172.20.10.3:3000");
+  const socket = io("http://192.168.43.54:3000");
 
 
   function toggleAnimation() {
@@ -63,16 +62,49 @@ const chomsky = () => {
     console.log("Recording stopped")
     await audioRecorder.stop();
     setIsRecording(false);
-    setUri(audioRecorder?.uri)
-    if (audioRecorder.uri) {
-      const fileUri = audioRecorder.uri;
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      if (fileInfo.exists) {
-        console.log(audioRecorder?.uri)
-      } else {
-        console.error("File does not exist at the specified URI");
-      }
+
+    const uri = audioRecorder.uri
+    setUri(uri)
+
+    if (!uri) {
+      console.error('Recording URI is null or undefined');
+      return;
     }
+
+    // First check if the file exists and get its info
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    
+    if (!fileInfo.exists) {
+      console.error(`File does not exist at: ${uri}`);
+      return;
+    }
+    
+    console.log(`File exists at ${uri}, size: ${fileInfo.size} bytes`);
+
+    if (uri) {
+      const fileBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      console.log(fileBase64)
+      console.log("Hello audio");
+      
+      socket.emit('upload', { file: fileBase64, fileName: 'Recording.m4a' }, (response: any) => {
+        if (response.success) {
+          console.log('Audio file sent successfully via socket');
+        } else {
+          console.error('Failed to send audio file via socket', response.error);
+        }
+      });
+    } else {
+      console.error('Recording URI is null or undefined');
+    }
+    // if (audioRecorder.uri) {
+    //   const fileUri = audioRecorder.uri;
+    //   const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    //   if (fileInfo.exists) {
+    //     console.log(audioRecorder?.uri)
+    //   } else {
+    //     console.error("File does not exist at the specified URI");
+    //   }
+    // }
     
       
     // const player = useAudioPlayer({ uri: audioRecorder.uri });
