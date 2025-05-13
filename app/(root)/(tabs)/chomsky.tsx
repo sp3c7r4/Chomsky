@@ -1,86 +1,53 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Audio } from 'expo-av'
+// import { Audio } from 'expo-av'
 import { Button, Image, Platform, Pressable, StyleSheet, Text } from 'react-native';
 import {io} from 'socket.io-client'
 import * as FileSystem from 'expo-file-system';
 import { View } from 'react-native';
+import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
-import { useAudioRecorder,useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
+import { useAudioRecorder, useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
 import { colors, fontsizes } from '@/constants';
 import LottieView from 'lottie-react-native';
 
 
 const chomsky = () => {
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [recordingUri, setRecordingUri] = useState<string | null>(null);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [sound, setSound] = useState();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const greetingAudio = require('@/assets/audio/greeting.mp3')
-  const [greeted, setGreeted] = useState(false)
   const [isRecording, setIsRecording] = useState(false);
   const animationRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [uri, setUri] = useState<string | undefined | null>()
+  
+  const greetingAudio = require('@/assets/audio/greeting.mp3')
   const greeting = useAudioPlayer(greetingAudio)
-  const socket = io("http://192.168.43.54:3000");
 
-  const [greetingSound, setGreetingSound] = useState<Audio.Sound | null>(null);
+  const socket = io("http://172.20.10.4:3000");
 
 {/** Side Effects */}
     useEffect(() => {
       (async () => {
-      const permissionResponse = await Audio.requestPermissionsAsync();
-      if (!permissionResponse.granted) {
-        Alert.alert('Permission to access microphone was denied');
-      }
-      
-      // Set audio mode for both recording and playback
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-        staysActiveInBackground: false,
-      });
-    })();
+          const status = await AudioModule.requestRecordingPermissionsAsync();
+          if (!status.granted) {
+            Alert.alert('Permission to access microphone was denied');
+          }
+        })();
       }, []);
       
-    useEffect(() => {
-      console.log(uri)
-    },[uri])
+      useEffect(() => {
+        console.log(uri)
+      },[uri])
       
     useEffect(() => {
-
-      (async function() {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/greeting.mp3')
-        );
-        setGreetingSound(sound);
-      } catch (error) {
-        console.error("Error loading greeting sound:", error);
-      }
-    })()
-    
-    // Cleanup
-    return () => {
-      if (greetingSound) {
-        greetingSound.unloadAsync();
-      }
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
+      greeting.play()
+      toggleAnimation()
+      // console.log(duration)
+      setTimeout(() => {
+        animationRef.current?.pause()
+      }, 5500)
     }, [])
-
-     useEffect(() => {
-      if (!greeted) {
-        firstGreeting();
-        setGreeted(true);
-      }
-    }, [greeted, greetingSound]);
 
     useEffect(() => {
       socket.on("connect", () => {
@@ -110,66 +77,20 @@ const chomsky = () => {
   };
   
   function firstGreeting() {
-    if (greetingSound) {
-      greetingSound.playAsync();
-      toggleAnimation();
-      setTimeout(() => {
-        animationRef.current?.pause();
-      }, 5500);
-    }
+    greeting.play()
+    toggleAnimation()
+    // console.log(duration)
+    setTimeout(() => {
+      animationRef.current?.pause()
+    }, 5500)
   }
   // toggleAnimation()
   
   const startRecording = async () => {
-    try {
-      // Ensure old recording is unloaded
-      if (recording) {
-        await recording.stopAndUnloadAsync();
-      }
-      
-      // Unload any existing sound
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
-      }
-      
-      console.log('Starting recording...');
-      
-      // Use high quality recording options
-      const recordingOptions = {
-        android: {
-          extension: '.m4a',
-          outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-          audioEncoder: Audio.AndroidAudioEncoder.AAC,
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitRate: 128000,
-        },
-        ios: {
-          extension: '.m4a',
-          audioQuality: Audio.IOSAudioQuality.MAX,
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitRate: 128000,
-          linearPCMBitDepth: 16,
-          linearPCMIsBigEndian: false,
-          linearPCMIsFloat: false,
-        },
-        web: {
-          mimeType: 'audio/webm',
-          bitsPerSecond: 128000,
-        },
-      };
-      
-      // Create new recording
-      const { recording: newRecording } = await Audio.Recording.createAsync(recordingOptions);
-      setRecording(newRecording);
-      setIsRecording(true);
-      console.log('Recording started');
-    } catch (err) {
-      console.error('Failed to start recording', err);
-      setIsRecording(false);
-    }
+    console.log("Recording started!!!")
+    await audioRecorder.prepareToRecordAsync();
+    audioRecorder.record();
+    setIsRecording(true);
   };
   
   // let player;
@@ -177,74 +98,83 @@ const chomsky = () => {
     //   player = useAudioPlayer({ uri });
     // }
   const stopRecording = async () => {
+    console.log("Recording stopped")
+    await audioRecorder.stop();
+    setIsRecording(false);
+
+    const uri = audioRecorder.uri
+    console.log(uri)
+    setUri(`file://${uri}`)
+
+    if (!uri) {
+      console.error('Recording URI is null or undefined');
+      return;
+    }
+
+    // First check if the file exists and get its info
+    const fileInfo = await FileSystem.getInfoAsync(`file://${uri}`, {size: true});
+    console.log("FILE INFO: ", fileInfo)
+    
+    if (!fileInfo.exists) {
+      console.error(`File does not exist at: ${uri}`);
+      return;
+    }
+    
+    console.log(`File exists at ${uri}, size: ${fileInfo.size} bytes`);
+    console.log(fileInfo.uri)
+    if (fileInfo.uri) {
+      console.log("Seen")
+      const fileBase64 = await FileSystem.readAsStringAsync(fileInfo.uri, { encoding: FileSystem.EncodingType.Base64 });
+      console.log(fileBase64)
+      console.log("Hello audio");
+      
+      socket.emit('upload', { file: fileBase64, fileName: `${Date.now()}.m4a` }, (response: any) => {
+        if (response.success) {
+          console.log('Audio file sent successfully via socket');
+        } else {
+          console.error('Failed to send audio file via socket', response.error);
+        }
+      });
+    } else {
+      console.error('Recording URI is null or undefined');
+    }
+    // if (audioRecorder.uri) {
+    //   const fileUri = audioRecorder.uri;
+    //   const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    //   if (fileInfo.exists) {
+    //     console.log(audioRecorder?.uri)
+    //   } else {
+    //     console.error("File does not exist at the specified URI");
+    //   }
+    // }
+    
+      
+    // const player = useAudioPlayer({ uri: audioRecorder.uri });
+    // // playSound(audioRecorder.uri)
+    // await player.play()
+  };
+
+  const shareAudio = async (fileUri: string) => {
     try {
-      console.log('Stopping recording...');
-      
-      if (!recording) {
-        console.log('No active recording');
-        setIsRecording(false);
-        return;
-      }
-      
-      // Stop the recording
-      await recording.stopAndUnloadAsync();
-      setIsRecording(false);
-      
-      // Get the recorded URI
-      const uri = recording.getURI();
-      setRecordingUri(uri);
-      setRecording(null);
-      
-      if (!uri) {
-        console.error('Recording URI is null or undefined');
-        return;
-      }
-      
-      console.log('Recording URI:', uri);
-      
-      // Check if file exists
-      const fileInfo = await FileSystem.getInfoAsync(uri);
-      
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
       if (!fileInfo.exists) {
-        console.error(`File does not exist at: ${uri}`);
+        Alert.alert("Error", "File not found. Cannot share.");
         return;
       }
-      
-      console.log(`File exists, size: ${fileInfo.size} bytes`);
-      
-      try {
-        // Try playing back the recording
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          { uri },
-          { shouldPlay: true }
-        );
-        setSound(newSound);
-        
-        // Read file as base64 for sending to server
-        const fileBase64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64
-        });
-        
-        console.log(`File read as base64, length: ${fileBase64.length}`);
-        
-        // Send to server
-        socket.emit('upload', {
-          file: fileBase64,
-          fileName: 'Recording.m4a'
-        }, (response) => {
-          if (response && response.success) {
-            console.log('Audio file sent successfully via socket');
-          } else {
-            console.error('Failed to send audio file via socket', 
-              response?.error || 'No response from server');
-          }
-        });
-        
-      } catch (error) {
-        console.error('Error playing or sending recording:', error);
+
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert("Error", "Sharing is not available on this platform.");
+        return;
       }
-    } catch (err) {
-      console.error('Failed to stop recording', err);
+
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'audio/m4a', // Or 'audio/mp4' as m4a is a container based on MPEG-4 Part 14
+        dialogTitle: 'Share this audio recording',
+        UTI: 'com.apple.m4a-audio', // For iOS if needed, though mimeType is often enough
+      });
+    } catch (error: any) {
+      console.error('Error sharing file:', error);
+      Alert.alert("Error", "Could not share the file: " + error.message);
     }
   };
 
@@ -255,7 +185,7 @@ const chomsky = () => {
       <View style={{height: "20%"}}>
         <Text style={{color: "#fff", textAlign: "center"}}>
           <Text style={{fontFamily: "Satoshi-Bold", fontSize: fontsizes.heading2}}>Hello, Satar!{"\n"}</Text>
-          <Text style={{fontFamily: "Satoshi-Bold",color: "rgba(255,255,255,0.2)", fontSize: fontsizes.button}}>Go ahead, I’m listening</Text>
+          <Text style={{fontFamily: "Satoshi-Medium",color: "rgba(255,255,255,0.2)", fontSize: fontsizes.button}}>Go ahead, I’m listening</Text>
         </Text>
       </View>
       {/* Chomsky Mascot 🤩 */}
@@ -281,7 +211,6 @@ const chomsky = () => {
         {/* <FloatingImage source={require('@/assets/images/cloud.png')} style={{ left: "10%",width: 100, height: 50 }} /> */}
       <View style={{position: "absolute"}}>
       </View>
-      {/* <Button title='talk' onPress={toggleAnimation}/> */}
       <StatusBar style='auto'/>
     </SafeAreaView>
   );

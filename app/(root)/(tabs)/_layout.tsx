@@ -100,8 +100,8 @@ const _layout = () => {
                 <Image 
                   source={require('@/assets/images/chomsky.png')} 
                   style={{
-                    width: 70,
-                    height: 70,
+                    width: 80,
+                    height: 80,
                     resizeMode: 'contain'
                   }}
                 />
