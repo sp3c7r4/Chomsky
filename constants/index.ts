@@ -17,4 +17,9 @@ const fontsizes = {
   button: 18,
 }
 
-export { colors, fontsizes };
+const speechSet = {
+  greeting: require('@/assets/audio/greeting.mp3'),
+  nanSpeech: require('@/assets/audio/nanSpeech.mp3'),
+}
+
+export { colors, fontsizes, speechSet };

@@ -8,8 +8,8 @@ import * as FileSystem from 'expo-file-system';
 import { View } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
-import { useAudioRecorder, useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus } from 'expo-audio';
-import { colors, fontsizes } from '@/constants';
+import { useAudioRecorder, useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus, AudioPlayer } from 'expo-audio';
+import { colors, fontsizes, speechSet } from '@/constants';
 import LottieView from 'lottie-react-native';
 
 
@@ -21,10 +21,19 @@ const chomsky = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uri, setUri] = useState<string | undefined | null>()
   
-  const greetingAudio = require('@/assets/audio/greeting.mp3')
-  const greeting = useAudioPlayer(greetingAudio)
+  const greeting = useAudioPlayer(speechSet.greeting)
+  const nanSpeech = useAudioPlayer(speechSet.nanSpeech)
 
   const socket = io("http://172.20.10.4:3000");
+
+  function playAudio(audio: AudioPlayer) {
+    audio.play() 
+    toggleAnimation()
+    
+    setTimeout(() => {
+      animationRef.current?.pause()
+    }, 5500)
+  }
 
 {/** Side Effects */}
     useEffect(() => {
@@ -41,12 +50,7 @@ const chomsky = () => {
       },[uri])
       
     useEffect(() => {
-      greeting.play()
-      toggleAnimation()
-      // console.log(duration)
-      setTimeout(() => {
-        animationRef.current?.pause()
-      }, 5500)
+      playAudio(greeting)
     }, [])
 
     useEffect(() => {
@@ -84,6 +88,8 @@ const chomsky = () => {
       animationRef.current?.pause()
     }, 5500)
   }
+
+  
   // toggleAnimation()
   
   const startRecording = async () => {
@@ -129,12 +135,25 @@ const chomsky = () => {
       console.log("Hello audio");
       
       socket.emit('upload', { file: fileBase64, fileName: `${Date.now()}.m4a` }, (response: any) => {
+        const message = response.message
         if (response.success) {
-          console.log('Audio file sent successfully via socket');
+          console.log(message)
+          switch (message) {
+            case 'invalidSpeech':
+              playAudio(nanSpeech)
+              break;
+          
+            default:
+              break;
+          }
+          console.log('Audio file sent successfully via socket', 'MSG: '+ response?.message);
         } else {
           console.error('Failed to send audio file via socket', response.error);
         }
       });
+      socket.on('invalidSpeech', (data) => {
+        playAudio(nanSpeech)
+      } )
     } else {
       console.error('Recording URI is null or undefined');
     }
