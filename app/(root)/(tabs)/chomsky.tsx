@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-// import { Audio } from 'expo-av'
 import { Button, Image, Platform, Pressable, StyleSheet, Text } from 'react-native';
 import {io} from 'socket.io-client'
 import * as FileSystem from 'expo-file-system';
@@ -11,7 +10,7 @@ import { Alert } from 'react-native';
 import { useAudioRecorder, useAudioPlayer , AudioModule, RecordingPresets, useAudioPlayerStatus, AudioPlayer } from 'expo-audio';
 import { colors, fontsizes, speechSet } from '@/constants';
 import LottieView from 'lottie-react-native';
-
+import Mastra from '@/utils/Mastra';
 
 const chomsky = () => {
   const [sound, setSound] = useState();
@@ -112,11 +111,6 @@ const chomsky = () => {
     console.log(uri)
     setUri(`file://${uri}`)
 
-    if (!uri) {
-      console.error('Recording URI is null or undefined');
-      return;
-    }
-
     // First check if the file exists and get its info
     const fileInfo = await FileSystem.getInfoAsync(`file://${uri}`, {size: true});
     console.log("FILE INFO: ", fileInfo)
@@ -130,30 +124,34 @@ const chomsky = () => {
     console.log(fileInfo.uri)
     if (fileInfo.uri) {
       console.log("Seen")
-      const fileBase64 = await FileSystem.readAsStringAsync(fileInfo.uri, { encoding: FileSystem.EncodingType.Base64 });
-      console.log(fileBase64)
-      console.log("Hello audio");
+      const readasAudioBlob = await fetch('./../../../assets/audio/greeting.mp3')
+      const audioBlob = await readasAudioBlob.blob()
+      console.log(audioBlob)
+      Mastra.voiceInput(audioBlob)
+      // const fileBase64 = await FileSystem.readAsStringAsync(fileInfo.uri, { encoding: FileSystem.EncodingType.Base64 });
+      // console.log(fileBase64)
+      // console.log("Hello audio");
       
-      socket.emit('upload', { file: fileBase64, fileName: `${Date.now()}.m4a` }, (response: any) => {
-        const message = response.message
-        if (response.success) {
-          console.log(message)
-          switch (message) {
-            case 'invalidSpeech':
-              playAudio(nanSpeech)
-              break;
+      // socket.emit('upload', { file: fileBase64, fileName: `${Date.now()}.m4a` }, (response: any) => {
+      //   const message = response.message
+      //   if (response.success) {
+      //     console.log(message)
+      //     switch (message) {
+      //       case 'invalidSpeech':
+      //         playAudio(nanSpeech)
+      //         break;
           
-            default:
-              break;
-          }
-          console.log('Audio file sent successfully via socket', 'MSG: '+ response?.message);
-        } else {
-          console.error('Failed to send audio file via socket', response.error);
-        }
-      });
-      socket.on('invalidSpeech', (data) => {
-        playAudio(nanSpeech)
-      } )
+      //       default:
+      //         break;
+      //     }
+      //     console.log('Audio file sent successfully via socket', 'MSG: '+ response?.message);
+      //   } else {
+      //     console.error('Failed to send audio file via socket', response.error);
+      //   }
+      // });
+      // socket.on('invalidSpeech', (data) => {
+      //   playAudio(nanSpeech)
+      // } )
     } else {
       console.error('Recording URI is null or undefined');
     }
@@ -161,17 +159,25 @@ const chomsky = () => {
     //   const fileUri = audioRecorder.uri;
     //   const fileInfo = await FileSystem.getInfoAsync(fileUri);
     //   if (fileInfo.exists) {
-    //     console.log(audioRecorder?.uri)
-    //   } else {
-    //     console.error("File does not exist at the specified URI");
-    //   }
-    // }
-    
-      
-    // const player = useAudioPlayer({ uri: audioRecorder.uri });
-    // // playSound(audioRecorder.uri)
+      //     console.log(audioRecorder?.uri)
+      //   } else {
+        //     console.error("File does not exist at the specified URI");
+        //   }
+        // }
+        
+        
+        // const player = useAudioPlayer({ uri: audioRecorder.uri });
+        // // playSound(audioRecorder.uri)
     // await player.play()
   };
+
+  async function getAgent() {
+    try {
+      console.log(await Mastra.generate("Hello how are you today??"))
+    } catch (error) {
+      console.error("Development error:", error);
+    }
+  }
 
   const shareAudio = async (fileUri: string) => {
     try {
