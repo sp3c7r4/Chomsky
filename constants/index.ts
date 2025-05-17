@@ -22,4 +22,7 @@ const speechSet = {
   nanSpeech: require('@/assets/audio/nanSpeech.mp3'),
 }
 
-export { colors, fontsizes, speechSet };
+const mastra = {
+  url: "https://mainly-destined-marmot.ngrok-free.app"
+}
+export { colors, fontsizes, speechSet, mastra };

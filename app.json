@@ -16,7 +16,13 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.lacoco.Chomsky"
+      "package": "com.lacoco.Chomsky",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +46,12 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show current location on map."
+        }
+      ],
       "expo-font",
       "expo-web-browser"
     ],
@@ -51,7 +63,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "18d58130-4065-4bc2-aa43-14a29f7e29b8"
+        "projectId": "3bbb5090-fa7a-43b9-8778-8be9f4f908e0"
       }
     }
   }
