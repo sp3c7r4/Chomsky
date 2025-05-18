@@ -28,6 +28,7 @@ const data = {
   email: "spectragee@gmail.com",
   createdAt: "2025-03-23 03:29:16.212+01",
   updatedAt: "2025-03-23 03:29:16.212+01",
+  photo: require('@/assets/images/spectra.jpg')
 };
 
 const chomsky = () => {
